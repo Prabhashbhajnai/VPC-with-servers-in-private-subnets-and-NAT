@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create Server in Private Subnet and NAT and have a Jump Server in  place to access it
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: VPC/VPC.yml
+  
+  SecurityGroup:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: VPC
+    Properties:
+      TemplateURL: SG/SG.yml
+      
+  ALB:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: SecurityGroup
+    Properties:
+      TemplateURL: ALB/ALB.yml
+      
+  EC2:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ALB
+    Properties:
+      TemplateURL: EC2/EC2.yml
+

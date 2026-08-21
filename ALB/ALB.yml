@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Application Load Balancer to manage the traffic
+
+Resources:
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: bastion-alb
+      Type: application
+      Subnets:
+        - Fn::ImportValue: PublicSubnet1
+        - Fn::ImportValue: PublicSubnet2
+      SecurityGroups: 
+        - Fn::ImportValue: ALBSG
+      
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: bastion-target-group
+      Protocol: HTTP
+      Port: 80
+      TargetType: instance
+      VpcId: !ImportValue JumpServerVPC
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: traffic-port
+      HealthCheckPath: /
+      # Targets:
+      #   - Id: !Ref ALB
+      #     Port: 80   
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:   
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup  
+
+Outputs:
+  ALB:
+    Description: Application Load Balancer
+    Value: !Ref ALB
+    Export:
+      Name: ALB
+
+  TargetGroup:
+    Description: Target Group
+    Value: !Ref TargetGroup
+    Export: 
+      Name: TargetGroup

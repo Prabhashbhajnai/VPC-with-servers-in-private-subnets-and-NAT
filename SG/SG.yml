@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Security Group for Bastion, ALB & EC2
+
+Resources:
+  BastionSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for Bastion Server
+      GroupName: bastion-sg
+      VpcId: !ImportValue JumpServerVPC
+      # Allow incoming traffic from (type ssh)
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          FromPort: 22
+          ToPort: 22
+      
+      # Allow outbound traffic to 
+      SecurityGroupEgress:
+        - IpProtocol: -1        # -1 to specify all protocols
+          CidrIp: 0.0.0.0/0   # All traffic
+      
+      Tags:
+      - Key: Name
+        Value: JumpServer-Bastion-SG
+
+  ALBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for ALB
+      GroupName: ALB-sg
+      VpcId: !ImportValue JumpServerVPC
+      # Allow incoming traffic from (type http)
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          CidrIp: 0.0.0.0/0
+          FromPort: 80 
+          ToPort: 80
+
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+         
+      Tags:
+      - Key: Name
+        Value: JumpServer-ALB-SG
+
+  PrivateEC2SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for EC2 to allow traffic from ALB and Bastion
+      GroupName: Private EC2 Security Group
+      VpcId: !ImportValue JumpServerVPC
+
+      SecurityGroupIngress:
+        # Allow traffic from ALB
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSG
+
+        # Allow ssh from Bastion Server
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Ref BastionSG
+
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      
+      Tags:
+      - Key: Name
+        Value: JumpServer-PrivateEC2-SG
+
+Outputs:
+  BastionSG: 
+    Description: Security Group for Bastion Server
+    Value: !Ref BastionSG
+    Export:
+      Name: BastionSG
+    
+  PrivateEC2SG:
+    Description: Security Group for Private EC2
+    Value: !Ref PrivateEC2SG
+    Export:
+      Name: PrivateEC2SG
+
+  ALBSG: 
+    Description: Security Group for ALB
+    Value: !Ref ALBSG
+    Export:
+      Name: ALBSG
