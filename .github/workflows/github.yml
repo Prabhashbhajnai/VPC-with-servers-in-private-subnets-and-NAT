@@ -43,13 +43,14 @@ jobs:
               run: |
                 # Install cfn-lint
                 pip install cfn-lint
-                cfn-lint ${{ github.event.inputs.template-file}}
+                cfn-lint ${{ inputs.template-file}}
     
     cloudformation-deploy:
         if: inputs.Cloudformation-deploy == 'true' && github.event_name == 'workflow_dispatch'
+        needs: lint
         uses: prabhashbhajnai/ci-template/.github/workflows/cloudformation-deploy.yml@main
         with:
-            aws-region: ${{ github.event.inputs.aws-region }}
-            template-file: ${{ github.event.inputs.template-file}}
-            s3-bucket: ${{ github.event.inputs.s3-bucket}}
+            aws-region: ${{ inputs.aws-region }}
+            template-file: ${{ inputs.template-file}}
+            s3-bucket: ${{ inputs.s3-bucket}}
         secrets: inherit
