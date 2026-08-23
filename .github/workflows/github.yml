@@ -1,0 +1,55 @@
+#.github/workflows/github.yml
+name: AWS CloudFormation Deployment
+
+on:
+    push:
+    pull_request:
+        types:
+            - opened
+            - synchronize
+            - closed
+    workflow_dispatch:
+        inputs:
+            Cloudformation-deploy:
+                description: 'Deploy the stack'
+                type: boolean
+                default: false
+
+            aws-region:
+                description: 'AWS Region'
+                default: ap-south-1
+                
+            template-file:
+                description: 'CloudFormation template file'
+                default: Mainstack.yml
+
+            s3-bucket:
+                description: 'S3 bucket for storing artifacts'
+                default: bastion-server-bucket
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
+            
+            - name: Lint CloudFormation template
+              shell: bash
+              run: |
+                # Install cfn-lint
+                pip install cfn-lint
+                cfn-lint ${{ github.event.inputs.template-file}}
+    
+    cloudformation-deploy:
+        if: inputs.Cloudformation-deploy == 'true' && github.event_name == 'workflow_dispatch'
+        uses: prabhashbhajnai/ci-template/.github/workflows/cloudformation-deploy.yml@main
+        with:
+            aws-region: ${{ github.event.inputs.aws-region }}
+            template-file: ${{ github.event.inputs.template-file}}
+            s3-bucket: ${{ github.event.inputs.s3-bucket}}
+        secrets: inherit
