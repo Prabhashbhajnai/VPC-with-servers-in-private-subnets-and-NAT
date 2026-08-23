@@ -8,23 +8,24 @@ on:
             - opened
             - synchronize
             - closed
+
     workflow_dispatch:
         inputs:
-            Cloudformation-deploy:
-                description: 'Deploy the stack'
+            cloudformation-deploy:
+                description: "Deploy the stack"
                 type: boolean
                 default: false
 
             aws-region:
-                description: 'AWS Region'
+                description: "AWS Region"
                 default: ap-south-1
-                
+
             template-file:
-                description: 'CloudFormation template file'
+                description: "CloudFormation template file"
                 default: MainStack.yml
 
             s3-bucket:
-                description: 'S3 bucket for storing artifacts'
+                description: "S3 bucket for storing artifacts"
                 default: bastion-server-bucket
 
 permissions:
@@ -32,25 +33,11 @@ permissions:
     contents: read
 
 jobs:
-    lint:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v5
-            
-            - name: Lint CloudFormation template
-              shell: bash
-              run: |
-                # Install cfn-lint
-                pip install cfn-lint
-                cfn-lint ${{ inputs.template-file}}
-    
     cloudformation-deploy:
-        if: inputs.Cloudformation-deploy == 'true' && github.event_name == 'workflow_dispatch'
-        needs: lint
         uses: prabhashbhajnai/ci-template/.github/workflows/cloudformation-deploy.yml@main
         with:
             aws-region: ${{ inputs.aws-region }}
-            template-file: ${{ inputs.template-file}}
-            s3-bucket: ${{ inputs.s3-bucket}}
+            template-file: ${{ inputs.template-file }}
+            s3-bucket: ${{ inputs.s3-bucket }}
+            cloudformation-deploy: ${{ inputs.cloudformation-deploy || false }}
         secrets: inherit
