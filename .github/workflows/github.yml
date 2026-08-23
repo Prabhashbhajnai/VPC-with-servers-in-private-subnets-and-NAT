@@ -21,7 +21,7 @@ on:
                 
             template-file:
                 description: 'CloudFormation template file'
-                default: Mainstack.yml
+                default: MainStack.yml
 
             s3-bucket:
                 description: 'S3 bucket for storing artifacts'
