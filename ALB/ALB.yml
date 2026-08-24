@@ -50,3 +50,7 @@ Outputs:
     Value: !Ref TargetGroup
     Export: 
       Name: TargetGroup
+
+  ApplicationURL:
+    Description: Application URL
+    Value: !Sub "http://${ALB.DNSName}"
