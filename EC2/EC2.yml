@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Create 2 EC2, 1 in each AZs with no public access and 1 as a Bastion or the Jump Server
 
+Parameters:
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+
 Resources:
   LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
@@ -70,7 +74,7 @@ Resources:
   JumpServerAsg:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: JumpServer-ASG
+      AutoScalingGroupName: JumpServer-App-ASG
       AvailabilityZoneDistribution:
         CapacityDistributionStrategy: balanced-only
       VPCZoneIdentifier:
@@ -92,3 +96,13 @@ Resources:
       - Key: Name
         Value: JumpServer
         PropagateAtLaunch: true
+
+  BastionServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+      InstanceType: t3.micro
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue PublicSubnet1
+      SecurityGroupIds:
+        - Fn::ImportValue: BastionSG

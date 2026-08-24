@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Create Server in Private Subnet and NAT and have a Jump Server in  place to access it
 
+Parameters:
+  KeyName:
+    Description: EC2 key pair to SSH into the Bastion Server
+    Type: AWS::EC2::KeyPair::KeyName
+
 Resources:
   VPC:
     Type: AWS::CloudFormation::Stack
@@ -24,4 +29,6 @@ Resources:
     DependsOn: ALB
     Properties:
       TemplateURL: EC2/EC2.yml
+      Parameters:
+        KeyName: !Ref KeyName
 
