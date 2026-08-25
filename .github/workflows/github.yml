@@ -24,10 +24,6 @@ on:
                 description: "CloudFormation template file"
                 default: MainStack.yml
 
-            s3-bucket:
-                description: "S3 bucket for storing artifacts"
-                default: bastion-server-bucket
-
 permissions:
     id-token: write
     contents: read
@@ -38,6 +34,5 @@ jobs:
         with:
             aws-region: ${{ inputs.aws-region }}
             template-file: ${{ inputs.template-file }}
-            s3-bucket: ${{ inputs.s3-bucket }}
             cloudformation-deploy: ${{ inputs.cloudformation-deploy || false }}
         secrets: inherit
