@@ -15,6 +15,7 @@ Resources:
         InstanceType: t3.micro
         SecurityGroupIds:
           - Fn::ImportValue: PrivateEC2SG
+        KeyName: !Ref KeyName
         UserData:
           Fn::Base64: |
             #!/bin/bash
